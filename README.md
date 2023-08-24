@@ -23,9 +23,9 @@ Before you begin, ensure you have met the following requirements:
 7. Run `APIExampleStream.py` clicking on run button or type `python    APIExampleStream.py` on terminal.
 8. Chage Server URI in config/global file use python server running URI (Ex:http://192.168.86.39:880)
 
-
 # Folder Structure
 
+```
 my-app/
   README.md
   node_modules/
@@ -47,9 +47,10 @@ my-app/
       routes.js
     store
       authSlice.js
-      index.js    
-    UI  
+      index.js
+    UI
     utils
       helper.js
     index.js
-    index.css    
+    index.css
+```
