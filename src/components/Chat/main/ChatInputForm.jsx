@@ -23,8 +23,19 @@ function ChatInputForm({ getUserMessage }) {
   const [isBtnLoader, setBtnLoader] = useState(false);
   const [userMessage, setUserMessage] = useState({
     Message: "",
-    user_type: "",
+    user_type: "sender",
   });
+
+  // Speech Recognition
+  const {
+    transcript,
+    resetTranscript,
+    listening,
+    browserSupportsSpeechRecognition,
+  } = useSpeechRecognition();
+
+  // Common Condition of message and transcript
+  let allowMessage = transcript.length > 0 ? transcript : userMessage?.Message;
 
   // All Past Messages and thier responses
   const allMessages = useSelector((state) => state.auth.message);
@@ -33,10 +44,6 @@ function ChatInputForm({ getUserMessage }) {
   const onInputMessageHandler = (name, value) => {
     setUserMessage({ ...userMessage, Message: value, user_type: "sender" });
   };
-
-  // Speech Recognition
-  const { transcript, listening, browserSupportsSpeechRecognition } =
-    useSpeechRecognition();
 
   // Speech Recognition Mic ON-OFF Handler
   const micHandler = () => {
@@ -56,18 +63,24 @@ function ChatInputForm({ getUserMessage }) {
     e.preventDefault();
     setBtnLoader(true);
     try {
-      if (userMessage?.Message) {
+      if (userMessage?.Message || transcript.length > 0) {
         // New Chat Message
         const newMessage = {
           id: generateRandomId(),
-          message: userMessage?.Message,
+          message: allowMessage,
           user_type: userMessage?.user_type,
         };
 
+        // Request Data
+        const requestData = {
+          data: allowMessage,
+        };
+
         // API Response
-        const response = await axios.post(SERVER_URI + SEND_MESSAGE_POST, {
-          data: userMessage?.Message,
-        });
+        const response = await axios.post(
+          SERVER_URI + SEND_MESSAGE_POST,
+          requestData
+        );
 
         if (response.data) {
           setBtnLoader(false);
@@ -88,6 +101,8 @@ function ChatInputForm({ getUserMessage }) {
         setUserMessage({
           Message: "",
         });
+
+        resetTranscript();
       }
     } catch (err) {
       setBtnLoader(false);
@@ -107,9 +122,7 @@ function ChatInputForm({ getUserMessage }) {
                 inputType="text"
                 className="chat-input"
                 disabled={transcript.length > 0}
-                isValue={
-                  transcript.length > 0 ? transcript : userMessage?.Message
-                }
+                isValue={allowMessage}
               />
 
               {userMessage?.Message.length > 0 ||
